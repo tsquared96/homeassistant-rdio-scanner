@@ -1,0 +1,13 @@
+```json
+{
+  "domain": "trunk_recorder",
+  "name": "Trunk Recorder",
+  "codeowners": ["@yourusername"],
+  "config_flow": true,
+  "dependencies": ["websocket_api"],
+  "documentation": "https://github.com/yourusername/trunk_recorder",
+  "iot_class": "local_polling",
+  "requirements": ["aiohttp>=3.8.0", "websocket-client>=1.4.0"],
+  "version": "1.0.0"
+}
+```
