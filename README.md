@@ -2,7 +2,7 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/yourusername/ha-trunk-recorder/graphs/commit-activity)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/tsquared96/ha-trunk-recorder/graphs/commit-activity)
 
 A comprehensive Home Assistant integration for [TrunkRecorder](https://github.com/robotastic/trunk-recorder) that provides real-time police/fire/EMS radio monitoring with a modern, Rdio-Scanner-inspired interface.
 
@@ -47,7 +47,7 @@ A comprehensive Home Assistant integration for [TrunkRecorder](https://github.co
 1. Open HACS in Home Assistant
 2. Click on "Integrations"
 3. Click the three dots menu and select "Custom repositories"
-4. Add this repository URL: `https://github.com/yourusername/ha-trunk-recorder`
+4. Add this repository URL: `https://github.com/tsquared96/ha-trunk-recorder`
 5. Select "Integration" as the category
 6. Click "Add"
 7. Search for "TrunkRecorder" and install
