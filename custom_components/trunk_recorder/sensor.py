@@ -1,14 +1,16 @@
-"""Sensor platform for TrunkRecorder."""
+"""Sensor platform for Trunk Recorder."""
+from __future__ import annotations
+
 import logging
 
-from homeassistant.components.sensor import SensorEntity, SensorStateClass
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from .coordinator import TrunkRecorderCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -18,106 +20,86 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up TrunkRecorder sensors."""
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
+    """Set up Trunk Recorder sensors."""
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]
     
     sensors = [
-        TrunkRecorderActiveCalls(coordinator),
-        TrunkRecorderTotalCalls(coordinator),
+        TrunkRecorderActiveCalls(coordinator, config_entry),
+        TrunkRecorderTotalCalls(coordinator, config_entry),
+        TrunkRecorderStatus(coordinator, config_entry),
     ]
-    
-    # Add system-specific sensors
-    for system in coordinator.systems:
-        sensors.append(TrunkRecorderSystemSensor(coordinator, system))
     
     async_add_entities(sensors)
 
 
 class TrunkRecorderSensorBase(CoordinatorEntity, SensorEntity):
-    """Base class for TrunkRecorder sensors."""
+    """Base class for Trunk Recorder sensors."""
     
-    def __init__(self, coordinator: TrunkRecorderCoordinator) -> None:
-        """Initialize sensor."""
+    def __init__(self, coordinator, config_entry: ConfigEntry) -> None:
+        """Initialize the sensor."""
         super().__init__(coordinator)
-        self._attr_has_entity_name = True
+        self.config_entry = config_entry
+        self._attr_device_info = {
+            "identifiers": {(DOMAIN, config_entry.entry_id)},
+            "name": config_entry.data.get(CONF_NAME, "Trunk Recorder"),
+            "manufacturer": "Trunk Recorder",
+            "model": "Database Scanner",
+        }
 
 
 class TrunkRecorderActiveCalls(TrunkRecorderSensorBase):
     """Sensor for active calls."""
     
-    def __init__(self, coordinator: TrunkRecorderCoordinator) -> None:
-        """Initialize sensor."""
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{DOMAIN}_active_calls"
-        self._attr_name = "Active Calls"
+    def __init__(self, coordinator, config_entry: ConfigEntry) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, config_entry)
+        self._attr_name = f"{config_entry.data.get(CONF_NAME)} Active Calls"
+        self._attr_unique_id = f"{config_entry.entry_id}_active_calls"
         self._attr_icon = "mdi:radio-tower"
-        self._attr_state_class = SensorStateClass.MEASUREMENT
     
     @property
     def state(self):
-        """Return the state of the sensor."""
-        return len(self.coordinator.active_calls)
-    
-    @property
-    def extra_state_attributes(self):
-        """Return extra state attributes."""
-        return {
-            "calls": list(self.coordinator.active_calls.values()),
-        }
+        """Return the state."""
+        return self.coordinator.data.get("active_calls", 0)
 
 
 class TrunkRecorderTotalCalls(TrunkRecorderSensorBase):
-    """Sensor for total calls today."""
+    """Sensor for total calls."""
     
-    def __init__(self, coordinator: TrunkRecorderCoordinator) -> None:
-        """Initialize sensor."""
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{DOMAIN}_total_calls"
-        self._attr_name = "Total Calls Today"
+    def __init__(self, coordinator, config_entry: ConfigEntry) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, config_entry)
+        self._attr_name = f"{config_entry.data.get(CONF_NAME)} Total Calls"
+        self._attr_unique_id = f"{config_entry.entry_id}_total_calls"
         self._attr_icon = "mdi:counter"
-        self._attr_state_class = SensorStateClass.TOTAL_INCREASING
     
     @property
     def state(self):
-        """Return the state of the sensor."""
-        # Count calls from today
-        from datetime import datetime, timezone
-        today = datetime.now(timezone.utc).date()
-        today_calls = [
-            call for call in self.coordinator.call_history
-            if datetime.fromisoformat(call.get("start_time", "")).date() == today
-        ]
-        return len(today_calls)
+        """Return the state."""
+        return self.coordinator.data.get("total_calls", 0)
 
 
-class TrunkRecorderSystemSensor(TrunkRecorderSensorBase):
-    """Sensor for a specific system."""
+class TrunkRecorderStatus(TrunkRecorderSensorBase):
+    """Sensor for connection status."""
     
-    def __init__(
-        self, coordinator: TrunkRecorderCoordinator, system: dict
-    ) -> None:
-        """Initialize sensor."""
-        super().__init__(coordinator)
-        self.system = system
-        self._attr_unique_id = f"{DOMAIN}_system_{system['id']}"
-        self._attr_name = f"System {system['name']}"
-        self._attr_icon = "mdi:radio"
+    def __init__(self, coordinator, config_entry: ConfigEntry) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator, config_entry)
+        self._attr_name = f"{config_entry.data.get(CONF_NAME)} Status"
+        self._attr_unique_id = f"{config_entry.entry_id}_status"
+        self._attr_icon = "mdi:database"
     
     @property
     def state(self):
-        """Return the state of the sensor."""
-        # Count active calls for this system
-        active = sum(
-            1 for call in self.coordinator.active_calls.values()
-            if call.get("system") == self.system["id"]
-        )
-        return active
+        """Return the state."""
+        return "Connected" if self.coordinator.data.get("connected", False) else "Disconnected"
     
     @property
     def extra_state_attributes(self):
-        """Return extra state attributes."""
+        """Return extra attributes."""
         return {
-            "system_id": self.system["id"],
-            "system_name": self.system["name"],
-            "talkgroups": self.coordinator.talkgroups.get(self.system["id"], []),
+            "database_type": self.config_entry.data.get("db_type", "unknown"),
+            "host": self.config_entry.data.get("host", "unknown"),
+            "database": self.config_entry.data.get("db_name", "unknown"),
+            "systems": len(self.coordinator.data.get("systems", [])),
         }
