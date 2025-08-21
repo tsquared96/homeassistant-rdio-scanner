@@ -1,0 +1,24 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Rdio-Scanner",
+        "description": "Enter the path to your Rdio-Scanner data directory containing rdio-scanner.db",
+        "data": {
+          "name": "Name",
+          "path": "Data Directory Path"
+        },
+        "data_description": {
+          "path": "Path to the directory containing rdio-scanner.db (e.g., /opt/rdio-scanner/data)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot find or connect to rdio-scanner.db",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "Rdio-Scanner is already configured"
+    }
+  }
+}
