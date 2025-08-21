@@ -55,7 +55,7 @@ A comprehensive Home Assistant integration for [TrunkRecorder](https://github.co
 
 ### Manual Installation
 
-1. Download the latest release from the [releases page](https://github.com/yourusername/ha-trunk-recorder/releases)
+1. Download the latest release from the [releases page](https://github.com/tsquared96/ha-trunk-recorder/releases)
 2. Extract the `trunk_recorder` folder to your `custom_components` directory:
    ```
    custom_components/
