@@ -1,7 +1,7 @@
 {
   "domain": "trunk_recorder",
   "name": "Trunk Recorder",
-  "codeowners": ["@yourusername"],
+  "codeowners": ["@tsquared96"],
   "config_flow": true,
   "dependencies": ["websocket_api"],
   "documentation": "https://github.com/tsquared96/trunk_recorder",
